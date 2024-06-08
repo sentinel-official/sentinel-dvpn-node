@@ -1,8 +1,12 @@
 package lite
 
 import (
+	"fmt"
+
 	"io"
+	"net/http"
 	"sync"
+	"time"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -10,8 +14,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
+	"github.com/cosmos/cosmos-sdk/version"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	tmlog "github.com/tendermint/tendermint/libs/log"
+	rpchttp "github.com/tendermint/tendermint/rpc/client/http"
+	jsonrpcclient "github.com/tendermint/tendermint/rpc/jsonrpc/client"
 )
 
 type Client struct {
@@ -151,3 +158,26 @@ func (c *Client) FromAddress() sdk.AccAddress { return c.ctx.FromAddress }
 func (c *Client) FromName() string            { return c.ctx.FromName }
 func (c *Client) SimulateAndExecute() bool    { return c.txf.SimulateAndExecute() }
 func (c *Client) TxConfig() client.TxConfig   { return c.ctx.TxConfig }
+
+type AddHeaderTransport struct {
+	T http.RoundTripper
+}
+
+func (adt *AddHeaderTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	verInfo := version.NewInfo()
+
+	req.Header.Add("User-Agent", fmt.Sprintf("sentinel-dvpn-node/v%s", verInfo.Version))
+	return adt.T.RoundTrip(req)
+}
+
+func (c *Client) GetHttpClient(remote string, timeout uint) (*rpchttp.HTTP, error) {
+	httpClient, err := jsonrpcclient.DefaultHTTPClient(remote)
+	if err != nil {
+		return nil, err
+	}
+
+	httpClient.Timeout = time.Duration(timeout) * time.Second
+	httpClient.Transport = &AddHeaderTransport{T: httpClient.Transport}
+
+	return rpchttp.NewWithClient(remote, "/websocket", httpClient)
+}

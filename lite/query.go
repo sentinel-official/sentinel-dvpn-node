@@ -10,7 +10,6 @@ import (
 	sessiontypes "github.com/sentinel-official/hub/x/session/types"
 	subscriptiontypes "github.com/sentinel-official/hub/x/subscription/types"
 	vpntypes "github.com/sentinel-official/hub/x/vpn/types"
-	rpchttp "github.com/tendermint/tendermint/rpc/client/http"
 
 	"github.com/sentinel-official/dvpn-node/types"
 )
@@ -18,7 +17,7 @@ import (
 func (c *Client) queryAccount(remote string, accAddr sdk.AccAddress) (authtypes.AccountI, error) {
 	c.log.Debug("Querying the account", "remote", remote, "address", accAddr)
 
-	client, err := rpchttp.NewWithTimeout(remote, "/websocket", c.queryTimeout)
+	client, err := c.GetHttpClient(remote, c.queryTimeout)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +63,7 @@ func (c *Client) QueryAccount(accAddr sdk.AccAddress) (result authtypes.AccountI
 func (c *Client) queryNode(remote string, nodeAddr hubtypes.NodeAddress) (*nodetypes.Node, error) {
 	c.log.Debug("Querying the node", "remote", remote, "address", nodeAddr)
 
-	client, err := rpchttp.NewWithTimeout(remote, "/websocket", c.queryTimeout)
+	client, err := c.GetHttpClient(remote, c.queryTimeout)
 	if err != nil {
 		return nil, err
 	}
@@ -103,7 +102,7 @@ func (c *Client) QueryNode(nodeAddr hubtypes.NodeAddress) (result *nodetypes.Nod
 func (c *Client) querySubscription(remote string, id uint64) (subscriptiontypes.Subscription, error) {
 	c.log.Debug("Querying the subscription", "remote", remote, "id", id)
 
-	client, err := rpchttp.NewWithTimeout(remote, "/websocket", c.queryTimeout)
+	client, err := c.GetHttpClient(remote, c.queryTimeout)
 	if err != nil {
 		return nil, err
 	}
@@ -147,7 +146,7 @@ func (c *Client) QuerySubscription(id uint64) (result subscriptiontypes.Subscrip
 func (c *Client) queryAllocation(remote string, id uint64, accAddr sdk.AccAddress) (*subscriptiontypes.Allocation, error) {
 	c.log.Debug("Querying the allocation", "remote", remote, "id", id, "address", accAddr)
 
-	client, err := rpchttp.NewWithTimeout(remote, "/websocket", c.queryTimeout)
+	client, err := c.GetHttpClient(remote, c.queryTimeout)
 	if err != nil {
 		return nil, err
 	}
@@ -186,7 +185,7 @@ func (c *Client) QueryAllocation(id uint64, accAddr sdk.AccAddress) (result *sub
 func (c *Client) querySession(remote string, id uint64) (*sessiontypes.Session, error) {
 	c.log.Debug("Querying the session", "remote", remote, "id", id)
 
-	client, err := rpchttp.NewWithTimeout(remote, "/websocket", c.queryTimeout)
+	client, err := c.GetHttpClient(remote, c.queryTimeout)
 	if err != nil {
 		return nil, err
 	}
@@ -223,7 +222,7 @@ func (c *Client) QuerySession(id uint64) (result *sessiontypes.Session, err erro
 }
 
 func (c *Client) hasNodeForPlan(remote string, id uint64, nodeAddr hubtypes.NodeAddress) (bool, error) {
-	client, err := rpchttp.NewWithTimeout(remote, "/websocket", c.queryTimeout)
+	client, err := c.GetHttpClient(remote, c.queryTimeout)
 	if err != nil {
 		return false, err
 	}

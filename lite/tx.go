@@ -7,13 +7,12 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/pkg/errors"
 	abcitypes "github.com/tendermint/tendermint/abci/types"
-	rpchttp "github.com/tendermint/tendermint/rpc/client/http"
 )
 
 func (c *Client) broadcastTx(remote string, txBytes []byte) (*sdk.TxResponse, error) {
 	c.log.Debug("Broadcasting the transaction", "remote", remote, "size", len(txBytes))
 
-	client, err := rpchttp.NewWithTimeout(remote, "/websocket", c.txTimeout)
+	client, err := c.GetHttpClient(remote, c.txTimeout)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +57,7 @@ func (c *Client) BroadcastTx(txBytes []byte) (res *sdk.TxResponse, err error) {
 func (c *Client) calculateGas(remote string, txf tx.Factory, messages ...sdk.Msg) (uint64, error) {
 	c.log.Debug("Calculating the gas", "remote", remote, "messages", len(messages))
 
-	client, err := rpchttp.NewWithTimeout(remote, "/websocket", c.txTimeout)
+	client, err := c.GetHttpClient(remote, c.txTimeout)
 	if err != nil {
 		return 0, err
 	}
