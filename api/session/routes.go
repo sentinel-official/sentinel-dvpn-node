@@ -7,5 +7,5 @@ import (
 )
 
 func RegisterRoutes(ctx *context.Context, r gin.IRouter) {
-	r.GET("/accounts/:acc_addr/sessions/:id", HandlerAddSession(ctx))
+	r.GET("/sessions/:id", HandlerAddSession(ctx))
 }
