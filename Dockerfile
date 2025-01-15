@@ -1,4 +1,4 @@
-FROM golang:1.21-alpine3.19 AS build
+FROM golang:1.22-alpine3.21 AS build
 
 COPY . /root/dvpn-node/
 
@@ -9,12 +9,12 @@ RUN --mount=target=/go/pkg/mod,type=cache \
     git clone --branch=master --depth=1 https://github.com/handshake-org/hnsd.git /root/hnsd && \
     cd /root/hnsd/ && bash autogen.sh && sh configure && make --jobs=$(nproc)
 
-FROM alpine:3.19
+FROM alpine:3.21
 
-COPY --from=build /go/bin/sentinelnode /usr/local/bin/process
+COPY --from=build /go/bin/dvpnx /usr/local/bin/dvpnx
 COPY --from=build /root/hnsd/hnsd /usr/local/bin/hnsd
 
 RUN apk add --no-cache iptables unbound-libs v2ray wireguard-tools && \
     rm -rf /etc/v2ray/ /usr/share/v2ray/
 
-CMD ["process"]
+ENTRYPOINT ["dvpnx"]

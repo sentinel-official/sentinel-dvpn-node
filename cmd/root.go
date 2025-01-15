@@ -11,11 +11,11 @@ import (
 	"github.com/spf13/viper"
 )
 
-// NewRootCmd returns the main/root command for the dvpn-node CLI.
+// NewRootCmd returns the main/root command for the Sentinel dVPN node CLI.
 // It sets up persistent flags, config file reading, and attaches subcommands.
 func NewRootCmd(homeDir string) *cobra.Command {
 	rootCmd := &cobra.Command{
-		Use:   "dvpn-node",
+		Use:   "dvpnx",
 		Short: "Run and manage the Sentinel dVPN node",
 		Long: `The Sentinel dVPN node software lets users join the decentralized VPN network on the Sentinel Hub blockchain,
 providing secure, private, and censorship-resistant internet access while earning cryptocurrency rewards.

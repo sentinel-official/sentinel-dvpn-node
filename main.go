@@ -10,12 +10,10 @@ import (
 	"github.com/sentinel-official/dvpn-node/cmd"
 )
 
-func init() {
+func main() {
 	// Enable Cobra's feature to traverse and execute hooks for commands.
 	cobra.EnableTraverseRunHooks = true
-}
 
-func main() {
 	// Retrieve the user's home directory.
 	userDir, err := os.UserHomeDir()
 	if err != nil {
@@ -24,7 +22,7 @@ func main() {
 	}
 
 	// Define the default home directory for the application.
-	homeDir := filepath.Join(userDir, ".sentinelnode")
+	homeDir := filepath.Join(userDir, ".dvpnx")
 
 	// Initialize the root command for the application.
 	rootCmd := cmd.NewRootCmd(homeDir)
