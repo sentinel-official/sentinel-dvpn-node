@@ -2,6 +2,9 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/sentinel-official/sentinel-go-sdk/libs/log"
 	"github.com/spf13/cobra"
@@ -59,11 +62,31 @@ func StartCmd() *cobra.Command {
 				return fmt.Errorf("failed to setup node: %w", err)
 			}
 
+			// Channel to capture errors from the node.
+			errChan := make(chan error, 1)
+
 			// Start the node.
-			if err := n.Start(ctx); err != nil {
+			if err := n.Start(ctx, errChan); err != nil {
 				return fmt.Errorf("failed to start node: %w", err)
 			}
 
+			// Set up channel to capture OS signals.
+			signalChan := make(chan os.Signal, 1)
+			signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM)
+
+			// Wait for a signal or an error.
+			select {
+			case <-signalChan:
+			case err := <-errChan:
+				log.Error(err.Error())
+			}
+
+			// Stop the node gracefully.
+			if err := n.Stop(ctx); err != nil {
+				return fmt.Errorf("failed to stop node: %w", err)
+			}
+
+			log.Info("Node stopped successfully")
 			return nil
 		},
 	}

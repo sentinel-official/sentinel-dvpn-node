@@ -70,6 +70,8 @@ func (n *Node) Register(c *nodecontext.Context) error {
 		return nil
 	}
 
+	log.Info("Registering node...")
+
 	// Prepare a message to register the node.
 	msg := v3.NewMsgRegisterNodeRequest(
 		c.AccAddr().Bytes(),
@@ -93,6 +95,8 @@ func (n *Node) Register(c *nodecontext.Context) error {
 
 // UpdateDetails updates the node's pricing and address details on the network.
 func (n *Node) UpdateDetails(c *nodecontext.Context) error {
+	log.Info("Updating node details...")
+
 	// Prepare a message to update the node's details.
 	msg := v3.NewMsgUpdateNodeDetailsRequest(
 		c.AccAddr().Bytes(),
@@ -115,10 +119,8 @@ func (n *Node) UpdateDetails(c *nodecontext.Context) error {
 }
 
 // Start initializes the Node's services, scheduler, and HTTPS server.
-func (n *Node) Start(c *nodecontext.Context) error {
+func (n *Node) Start(c *nodecontext.Context, errChan chan error) error {
 	log.Info("Starting node...")
-
-	errChan := make(chan error)
 
 	go func() {
 		// Bring up the service by running pre-defined tasks.
@@ -160,14 +162,20 @@ func (n *Node) Start(c *nodecontext.Context) error {
 		}
 	}()
 
-	// Wait for any errors in a separate goroutine.
-	select {
-	case err := <-errChan:
-		return err
-	}
+	return nil
 }
 
 // Stop gracefully stops the Node's operations.
-func (n *Node) Stop() error {
+func (n *Node) Stop(c *nodecontext.Context) error {
+	if err := c.Service().PreDown(); err != nil {
+		return fmt.Errorf("failed to run service pre-down task: %w", err)
+	}
+	if err := c.Service().Down(context.TODO()); err != nil {
+		return fmt.Errorf("failed to run service down task: %w", err)
+	}
+	if err := c.Service().PostDown(); err != nil {
+		return fmt.Errorf("failed to run service post-up task: %w", err)
+	}
+
 	return nil
 }
